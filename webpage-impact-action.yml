@@ -1,0 +1,12 @@
+name: Webpage Impact Action
+description: "Measure the carbon impact of a webpage"
+inputs:
+  url:
+    description: "URL of the webpage to measure"
+    required: true
+outputs:
+  carbon_impact:
+    description: "Carbon impact in grams of CO2e of loading the webpage"
+runs:
+  using: "node20"
+  main: "webpage-impact-script.js"

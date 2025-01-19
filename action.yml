@@ -1,0 +1,56 @@
+name: Webpage Impact Action
+description: "Compare carbon impact of two versions of a webpage"
+inputs:
+  url:
+    description: "URL of the webpage"
+    type: string
+    required: true
+  base_branch:
+    description: "Base branch for comparison"
+    type: string
+    required: true
+  branch:
+    description: "Current branch. Compared against base branch for webpage carbon impact."
+    type: string
+    required: true
+  github_token:
+    description: "GitHub Token for publishing a comment on the PR. Your secrets.GITHUB_TOKEN"
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - name: Checkout Action Repo
+      uses: actions/checkout@v4
+      with:
+        path: webpage_impact_action
+        repository: "alexzurbonsen/webpage-impact-action"
+
+  - name: Install Action Repo dependencies
+    working-directory: webpage_impact_action
+    run: npm install
+
+  - name: Checkout Repo to test
+      uses: actions/checkout@v4
+      with:
+        path: repo_to_test
+        repository: ${{ github.repository }}
+        ref: ${{ github.event.pull_request.head.sha }}
+
+  # TODO: how to deploy the webpage on a branch? custom script...
+
+  - name: Measure webpage impact on branch
+    uses: ./webpage_impact_action/webpage-impact-action.yml
+    id: webpage_impact_branch
+    with:
+      url: ${{ inputs.url }}
+
+  - name: Measure webpage impact on base branch
+    working-directory: webpage_impact_action
+    run: |
+      git switch ${{ git}}
+      node webpage-impact-script.js ${{ inputs.url }}
+    shell: bash
+    env:
+      BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
